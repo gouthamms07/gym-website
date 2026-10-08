@@ -1,0 +1,14 @@
+/* Artwork extracted from the supplied Expose Gym reference visual. */
+.brand { overflow: visible; }
+.brand img { object-fit: contain; object-position: center; }
+.hero-mark { width: min(560px, 45vw); height: auto; border-radius: 0; background: transparent; display: block; box-shadow: none; filter: drop-shadow(0 0 40px #000); }
+.hero-mark img { display: block; width: 100%; height: auto; mix-blend-mode: screen; }
+.hero-mark .bar, .hero-mark .shield, .hero-mark p { display: none; }
+
+@media (max-width: 850px) {
+  .hero-mark { width: min(500px, 82vw); height: auto; }
+}
+
+@media (max-width: 500px) {
+  .hero-mark { height: auto; }
+}

@@ -1,0 +1,6 @@
+{% load static %}
+<header class="site-header"><a class="brand" href="{% url 'gym:home' %}"><img src="{% static 'images/expose-gym-logo.png' %}" alt="Expose Gym 2.0"></a>
+  <button class="menu-toggle" aria-label="Toggle navigation" aria-expanded="false">☰</button>
+  <nav class="main-nav" aria-label="Main navigation"><a class="active" href="{% url 'gym:home' %}">Home</a><a href="#about">About</a><a href="#services">Services</a><a href="#floor-plan">Floor Plan</a><a href="#trainers">Trainers</a><a href="#classes">Classes</a><a href="#contact">Contact</a></nav>
+  <a class="button button-small" href="#join">Join now</a>
+</header>
