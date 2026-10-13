@@ -7,3 +7,28 @@ media/*
 !media/.gitkeep
 staticfiles/
 .DS_Store
+
+# Terraform state and sensitive files
+*.tfstate
+*.tfstate.*
+*.tfvars
+*.tfvars.json
+.terraform/
+crash.log
+crash.*.log
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
+# Kubernetes credentials
+admin.conf
+kubeconfig
+kubeconfig.*
+*-kubeconfig
+
+# Local Terraform variables
+terraform/terraform.tfvars
+
+# Kubernetes admin credentials
+ansible/admin.conf
