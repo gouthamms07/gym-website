@@ -56,13 +56,15 @@ jobs:
         run: terraform validate
 
       - name: Verify SSH public key secret
+        env:
+          TF_PUBLIC_KEY_CHECK: ${{ secrets.TF_PUBLIC_KEY }}
         shell: bash
         run: |
-          if [ -z "$TF_VAR_public_key_content" ]; then
+          if [ -z "$TF_PUBLIC_KEY_CHECK" ]; then
             echo "ERROR: TF_PUBLIC_KEY is empty or unavailable."
             exit 1
           fi
-          if [[ "$TF_VAR_public_key_content" != ssh-ed25519 * ]]; then
+          if [[ "$TF_PUBLIC_KEY_CHECK" != ssh-ed25519\ * ]]; then
             echo "ERROR: The SSH public key format is unexpected."
             exit 1
           fi
