@@ -22,10 +22,10 @@ variable "root_volume_size" {
   default     = 20
 }
 
-variable "public_key_path" {
-  description = "Path to the SSH public key"
+variable "public_key_content" {
+  description = "SSH public key content for the EC2 key pair"
   type        = string
-  default     = "~/.ssh/id_ed25519.pub"
+  sensitive   = true
 }
 
 variable "allowed_ssh_cidr" {

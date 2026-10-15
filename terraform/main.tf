@@ -73,7 +73,7 @@ resource "aws_route_table_association" "public" {
 # SSH public key
 resource "aws_key_pair" "main" {
   key_name   = "${var.project_name}-key"
-  public_key = file(pathexpand(var.public_key_path))
+  public_key = var.public_key_content
 
   tags = {
     Name = "${var.project_name}-key"
@@ -169,6 +169,42 @@ resource "aws_iam_instance_profile" "worker" {
   role = aws_iam_role.worker.name
 }
 
+
+# IAM role for Kubernetes control plane
+resource "aws_iam_role" "control_plane" {
+  name = "${var.project_name}-control-plane-role"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Effect = "Allow"
+      Principal = {
+        Service = "ec2.amazonaws.com"
+      }
+      Action = "sts:AssumeRole"
+    }]
+  })
+
+  tags = {
+    Name = "${var.project_name}-control-plane-role"
+  }
+}
+
+# Allow the control plane to communicate with AWS Systems Manager
+resource "aws_iam_role_policy_attachment" "control_plane_ssm" {
+  role       = aws_iam_role.control_plane.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
+}
+
+# Instance profile for the control plane
+resource "aws_iam_instance_profile" "control_plane" {
+  name = "${var.project_name}-control-plane-profile"
+  role = aws_iam_role.control_plane.name
+}
+
+# Attach the profile to the existing control-plane instance
+
+
 # Kubernetes control-plane EC2
 resource "aws_instance" "control_plane" {
   ami                         = data.aws_ami.ubuntu.id
@@ -176,6 +212,7 @@ resource "aws_instance" "control_plane" {
   subnet_id                   = aws_subnet.public.id
   vpc_security_group_ids      = [aws_security_group.kubernetes.id]
   key_name                    = aws_key_pair.main.key_name
+  iam_instance_profile        = aws_iam_instance_profile.control_plane.name
   associate_public_ip_address = true
 
   root_block_device {
@@ -190,8 +227,9 @@ resource "aws_instance" "control_plane" {
   }
 
   tags = {
-    Name = "${var.project_name}-control-plane"
-    Role = "control-plane"
+    Name    = "${var.project_name}-control-plane"
+    Project = "${var.project_name}"
+    Role    = "control-plane"
   }
 }
 
@@ -217,7 +255,13 @@ resource "aws_instance" "worker" {
   }
 
   tags = {
-    Name = "${var.project_name}-worker-1"
-    Role = "worker"
+    Name    = "${var.project_name}-worker-1"
+    Project = "${var.project_name}"
+    Role    = "worker"
   }
+}
+
+resource "aws_iam_role_policy_attachment" "worker_ssm" {
+  role       = aws_iam_role.worker.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
 }

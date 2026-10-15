@@ -20,6 +20,7 @@ jobs:
       TF_IN_AUTOMATION: "true"
       TF_INPUT: "false"
       TF_VAR_allowed_ssh_cidr: ${{ vars.ALLOWED_SSH_CIDR }}
+      TF_VAR_public_key_content: ${{ secrets.TF_PUBLIC_KEY }}
 
     defaults:
       run:
