@@ -55,5 +55,18 @@ jobs:
       - name: Terraform Validate
         run: terraform validate
 
+      - name: Verify SSH public key secret
+        shell: bash
+        run: |
+          if [ -z "$TF_VAR_public_key_content" ]; then
+            echo "ERROR: TF_PUBLIC_KEY is empty or unavailable."
+            exit 1
+          fi
+          if [[ "$TF_VAR_public_key_content" != ssh-ed25519 * ]]; then
+            echo "ERROR: The SSH public key format is unexpected."
+            exit 1
+          fi
+          echo "SSH public key secret is present and has the expected format."
+
       - name: Terraform Plan
         run: terraform plan -input=false -lock-timeout=60s
