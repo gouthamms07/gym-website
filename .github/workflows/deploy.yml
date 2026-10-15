@@ -20,7 +20,7 @@ env:
   AWS_REGION: ap-south-1
   AWS_ACCOUNT_ID: "188244334939"
   ECR_REPOSITORY: expose-gym
-  EC2_INSTANCE_ID: i-0e95c4ee682fbcaca
+  EC2_INSTANCE_ID: i-0714a6a8df00f38dd
   K8S_NAMESPACE: expose-gym
 
 jobs:

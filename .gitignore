@@ -32,3 +32,6 @@ terraform/terraform.tfvars
 
 # Kubernetes admin credentials
 ansible/admin.conf
+
+# Kubernetes certificate files
+k8s-ca.crt
