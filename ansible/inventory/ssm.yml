@@ -1,0 +1,16 @@
+---
+all:
+  children:
+    k8s_cluster:
+      children:
+        control_plane:
+          hosts:
+            i-0714a6a8df00f38dd:
+        workers:
+          hosts:
+            i-01e6558dcb19cb891:
+      vars:
+        ansible_connection: amazon.aws.aws_ssm
+        ansible_aws_ssm_region: ap-south-1
+        ansible_aws_ssm_bucket_name: expose-gym-ansible-transfer-188244334939
+        ansible_become: true
