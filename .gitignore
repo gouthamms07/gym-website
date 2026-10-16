@@ -46,3 +46,7 @@ terraform/main.tf.bak
 terraform/main.tf.backup
 *.bak
 ansible/admin.conf
+
+# Kubernetes credentials
+admin.conf
+admin.conf.backup

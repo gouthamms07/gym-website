@@ -11,9 +11,9 @@ hostnames:
   - instance-id
 
 groups:
-  k8s_cluster: "tags.Project == 'expose-gym'"
-  control_plane: "tags.Role == 'control-plane'"
-  workers: "tags.Role == 'worker'"
+  k8s_cluster: "ec2_tags.Project == 'expose-gym'"
+  control_plane: "ec2_tags.Role == 'control-plane'"
+  workers: "ec2_tags.Role == 'worker'"
 
 compose:
   ansible_host: public_ip_address
