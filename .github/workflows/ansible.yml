@@ -1,0 +1,64 @@
+name: Expose Gym Ansible Automation
+
+on:
+  workflow_dispatch:
+    inputs:
+      run_playbook:
+        description: "Run the Ansible configuration playbook"
+        required: true
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: expose-gym-ansible
+  cancel-in-progress: false
+
+jobs:
+  ansible:
+    name: Test SSM and run Ansible
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials using OIDC
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::188244334939:role/expose-gym-ansible-github-actions-role
+          aws-region: ap-south-1
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Install Ansible dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install ansible-core boto3 botocore
+
+      - name: Install Ansible collections
+        run: ansible-galaxy collection install -r ansible/requirements.yml
+
+      - name: Install AWS Session Manager plugin
+        run: |
+          curl -fsSL "https://s3.amazonaws.com/session-manager-downloads/plugin/latest/ubuntu_64bit/session-manager-plugin.deb" -o /tmp/session-manager-plugin.deb
+          sudo dpkg -i /tmp/session-manager-plugin.deb
+          session-manager-plugin --version
+
+      - name: Validate Ansible inventory
+        run: ansible-inventory -i ansible/inventory/ssm.yml --graph
+
+      - name: Test SSM connectivity
+        run: |
+          ansible -i ansible/inventory/ssm.yml k8s_cluster -m ping -vv
+
+      - name: Run Ansible playbook
+        if: ${{ inputs.run_playbook }}
+        run: |
+          ansible-playbook -i ansible/inventory/ssm.yml ansible/site.yml --limit k8s_cluster
