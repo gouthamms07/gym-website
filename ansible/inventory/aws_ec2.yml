@@ -1,0 +1,19 @@
+plugin: amazon.aws.aws_ec2
+
+regions:
+  - ap-south-1
+
+filters:
+  tag:Project: expose-gym
+  instance-state-name: running
+
+hostnames:
+  - instance-id
+
+groups:
+  k8s_cluster: "tags.Project == 'expose-gym'"
+  control_plane: "tags.Role == 'control-plane'"
+  workers: "tags.Role == 'worker'"
+
+compose:
+  ansible_host: public_ip_address

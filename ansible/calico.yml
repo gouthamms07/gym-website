@@ -1,0 +1,30 @@
+---
+- name: Install Kubernetes pod networking
+  hosts: control_plane
+  become: true
+  gather_facts: false
+
+  tasks:
+    - name: Check whether Calico is already installed
+      ansible.builtin.command:
+        argv:
+          - kubectl
+          - --kubeconfig=/etc/kubernetes/admin.conf
+          - get
+          - daemonset
+          - calico-node
+          - -n
+          - kube-system
+      register: calico_check
+      changed_when: false
+      failed_when: false
+
+    - name: Install Calico networking
+      ansible.builtin.command:
+        argv:
+          - kubectl
+          - --kubeconfig=/etc/kubernetes/admin.conf
+          - apply
+          - -f
+          - https://raw.githubusercontent.com/projectcalico/calico/v3.32.1/manifests/calico.yaml
+      when: calico_check.rc != 0

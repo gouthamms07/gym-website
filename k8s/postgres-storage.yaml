@@ -19,7 +19,7 @@ spec:
             - key: kubernetes.io/hostname
               operator: In
               values:
-                - ip-10-20-1-130
+                - ip-10-20-1-40
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim

@@ -1,0 +1,41 @@
+---
+- name: Initialize Kubernetes control plane
+  hosts: control_plane
+  become: true
+  gather_facts: true
+
+  vars:
+    kubernetes_pod_network_cidr: "192.168.0.0/16"
+    kubernetes_admin_user: ubuntu
+
+  tasks:
+    - name: Check whether the control plane is already initialized
+      ansible.builtin.stat:
+        path: /etc/kubernetes/admin.conf
+      register: admin_config
+
+    - name: Initialize Kubernetes control plane
+      ansible.builtin.command:
+        argv:
+          - kubeadm
+          - init
+          - "--apiserver-advertise-address={{ ansible_default_ipv4.address }}"
+          - "--pod-network-cidr={{ kubernetes_pod_network_cidr }}"
+      when: not admin_config.stat.exists
+
+    - name: Ensure kubectl configuration directory exists
+      ansible.builtin.file:
+        path: "/home/{{ kubernetes_admin_user }}/.kube"
+        state: directory
+        owner: "{{ kubernetes_admin_user }}"
+        group: "{{ kubernetes_admin_user }}"
+        mode: "0700"
+
+    - name: Copy admin configuration for the Kubernetes user
+      ansible.builtin.copy:
+        src: /etc/kubernetes/admin.conf
+        dest: "/home/{{ kubernetes_admin_user }}/.kube/config"
+        remote_src: true
+        owner: "{{ kubernetes_admin_user }}"
+        group: "{{ kubernetes_admin_user }}"
+        mode: "0600"

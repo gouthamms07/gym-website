@@ -5,16 +5,6 @@
   gather_facts: false
 
   tasks:
-    - name: Delete the previously exposed bootstrap token
-      ansible.builtin.command:
-        argv:
-          - kubeadm
-          - token
-          - delete
-          - 1cvxy6
-      register: delete_token
-      failed_when: false
-      changed_when: delete_token.rc == 0
 
     - name: Generate a fresh worker join command
       ansible.builtin.command:

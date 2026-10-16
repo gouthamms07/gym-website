@@ -35,3 +35,14 @@ ansible/admin.conf
 
 # Kubernetes certificate files
 k8s-ca.crt
+
+# Terraform local files
+**/.terraform/*
+*.tfstate
+*.tfstate.*
+*.tfplan
+**/tfplan
+terraform/main.tf.bak
+terraform/main.tf.backup
+*.bak
+ansible/admin.conf
