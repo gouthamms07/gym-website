@@ -20,7 +20,6 @@ env:
   AWS_REGION: ap-south-1
   AWS_ACCOUNT_ID: "188244334939"
   ECR_REPOSITORY: expose-gym
-  EC2_INSTANCE_ID: i-0714a6a8df00f38dd
   K8S_NAMESPACE: expose-gym
 
 jobs:
@@ -142,6 +141,32 @@ jobs:
         with:
           role-to-assume: arn:aws:iam::188244334939:role/expose-gym-github-actions-role
           aws-region: ap-south-1
+
+      - name: Discover control-plane instance ID
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          INSTANCE_ID=$(aws ec2 describe-instances \
+            --region "$AWS_REGION" \
+            --filters \
+              "Name=tag:Name,Values=expose-gym-control-plane" \
+              "Name=instance-state-name,Values=running" \
+            --query 'Reservations[].Instances[].InstanceId' \
+            --output text)
+
+          if [ -z "$INSTANCE_ID" ] || [ "$INSTANCE_ID" = "None" ]; then
+            echo "Error: No running control-plane instance found."
+            exit 1
+          fi
+
+          if [ "$(echo "$INSTANCE_ID" | wc -w | tr -d ' ')" -ne 1 ]; then
+            echo "Error: Expected exactly one running control-plane instance."
+            exit 1
+          fi
+
+          echo "EC2_INSTANCE_ID=$INSTANCE_ID" >> "$GITHUB_ENV"
+          echo "Using control-plane instance: $INSTANCE_ID"
 
       - name: Deploy through AWS SSM
         env:
