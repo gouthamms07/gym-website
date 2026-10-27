@@ -9,6 +9,9 @@ on:
         type: boolean
         default: false
 
+env:
+  AWS_REGION: ap-south-1
+
 permissions:
   contents: read
   id-token: write
@@ -31,6 +34,63 @@ jobs:
         with:
           role-to-assume: arn:aws:iam::188244334939:role/expose-gym-ansible-github-actions-role
           aws-region: ap-south-1
+
+
+      - name: Discover EC2 instances and generate Ansible inventory
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          CONTROL_PLANE_ID=$(aws ec2 describe-instances \
+            --region "$AWS_REGION" \
+            --filters \
+              "Name=tag:Name,Values=expose-gym-control-plane" \
+              "Name=instance-state-name,Values=running" \
+            --query 'Reservations[].Instances[].InstanceId' \
+            --output text)
+
+          WORKER_ID=$(aws ec2 describe-instances \
+            --region "$AWS_REGION" \
+            --filters \
+              "Name=tag:Name,Values=expose-gym-worker-1" \
+              "Name=instance-state-name,Values=running" \
+            --query 'Reservations[].Instances[].InstanceId' \
+            --output text)
+
+          if [ "$(echo "$CONTROL_PLANE_ID" | wc -w | tr -d ' ')" -ne 1 ]; then
+            echo "Error: Expected exactly one running control-plane instance."
+            exit 1
+          fi
+
+          if [ "$(echo "$WORKER_ID" | wc -w | tr -d ' ')" -ne 1 ]; then
+            echo "Error: Expected exactly one running worker instance."
+            exit 1
+          fi
+
+          mkdir -p ansible/inventory
+
+          cat > ansible/inventory/ssm.yml <<EOF
+          ---
+          all:
+            children:
+              k8s_cluster:
+                children:
+                  control_plane:
+                    hosts:
+                      ${CONTROL_PLANE_ID}:
+                  workers:
+                    hosts:
+                      ${WORKER_ID}:
+                vars:
+                  ansible_connection: amazon.aws.aws_ssm
+                  ansible_aws_ssm_region: ${AWS_REGION}
+                  ansible_aws_ssm_bucket_name: expose-gym-ansible-transfer-188244334939
+                  ansible_become: true
+          EOF
+
+          echo "Discovered control plane: $CONTROL_PLANE_ID"
+          echo "Discovered worker: $WORKER_ID"
+          cat ansible/inventory/ssm.yml
 
       - name: Set up Python
         uses: actions/setup-python@v5

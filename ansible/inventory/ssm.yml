@@ -5,10 +5,10 @@ all:
       children:
         control_plane:
           hosts:
-            i-0714a6a8df00f38dd:
+            i-09fa054a45cb19491:
         workers:
           hosts:
-            i-01e6558dcb19cb891:
+            i-0f749e7f13595517e:
       vars:
         ansible_connection: amazon.aws.aws_ssm
         ansible_aws_ssm_region: ap-south-1
